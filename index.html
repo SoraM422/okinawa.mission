@@ -1,51 +1,96 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Mission Details</title>
-  <style>
-    body { background: #000; color: #fff; font-family: 'Courier New', monospace; text-align: center; margin: 0; }
-    .container, .box { border: 2px solid #fff; padding: 15px; margin: 20px auto; max-width: 90%; }
-    .title { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
-    .mission-description { font-size: 18px; margin: 10px 0; }
-    .points { font-size: 18px; margin: 10px 0; }
-    .info-box { border: 2px solid #fff; padding: 10px; text-align: left; margin-top: 20px; }
-    .button { border: 2px solid #fff; padding: 10px 20px; background: #333; color: #fff; cursor: pointer; margin-top: 20px; }
-    .button:hover { background: #666; }
-  </style>
-</head>
-<body>
-  <div class="container" id="mission-details">
-    <div class="title">MISSION <span id="mission-id"></span></div>
-    <div class="box mission-description" id="mission-description"></div>
-    <div class="points">You will earn: <span id="mission-points"></span> pt</div>
-    <div class="box info-box">
-      <strong>INFORMATION:</strong>
-      <p id="mission-info"></p>
-    </div>
-    <button class="button" onclick="document.getElementById('fileInput').click()">証拠写真を提出</button>
-    <input type="file" id="fileInput" style="display:none" onchange="handleFileUpload()"/>
+Input" style="display:none" onchange="handleFileUpload()"/>
+    <button class="button" onclick="goBack()">戻る</button>
+  </div>
+
+  <!-- ✅ ミッション完了ページ -->
+  <div class="container" id="completed-missions" style="display:none;">
+    <h1 class="box">COMPLETED MISSIONS</h1>
+    <div id="completed-mission-list"></div>
+    <button class="button" onclick="goBack()">戻る</button>
   </div>
 
   <script>
-    function loadMissionDetails() {
-      const params = new URLSearchParams(window.location.search);
-      const missionId = params.get('id');
-      document.getElementById('mission-id').textContent = missionId;
+    let totalPoints = parseInt(localStorage.getItem('totalPoints') || '0', 10);
+    document.getElementById('total-points').textContent = totalPoints;
+
+    function getMissionPoints(id) {
+      return id === 18 ? 40 : id <= 6 ? 3 : id <= 12 ? 5 : 10;
+    }
+
+    function populateMissions() {
+      let missionList = '';
+      for (let i = 1; i <= 6; i++) {
+        missionList += `<tr>
+          <td><a id="mission${i}" onclick="showMission(${i})">MISSION ${i}</a></td>
+          <td><a id="mission${i+6}" onclick="showMission(${i+6})">MISSION ${i+6}</a></td>
+          <td><a id="mission${i+12}" onclick="showMission(${i+12})">MISSION ${i+12}</a></td>
+        </tr>`;
+      }
+      document.getElementById('mission-list').innerHTML = missionList;
+      for (let i = 1; i <= 18; i++) {
+        if (localStorage.getItem(`MISSION_${i}`)) document.getElementById(`mission${i}`).classList.add('completed');
+      }
+    }
+
+    function showMission(id) {
+      document.getElementById('mission-id').textContent = id;
       document.getElementById('mission-description').textContent = `沖縄に生息する◯◯を発見せよ`;
-      document.getElementById('mission-points').textContent = 5;
+      document.getElementById('mission-points').textContent = getMissionPoints(id);
       document.getElementById('mission-info').textContent = "ここにミッションに関する詳細情報を記載する";
+      
+      document.getElementById('main-page').style.display = 'none';
+      document.getElementById('mission-details').style.display = 'block';
     }
 
     function handleFileUpload() {
       const fileInput = document.getElementById('fileInput');
-      if (fileInput.files.length > 0) {
-        alert("証拠写真が提出されました。");
-      }
+      const missionId = document.getElementById('mission-id').textContent;
+      if (fileInput.files.length === 0 || localStorage.getItem(`MISSION_${missionId}`)) return alert('Mission already completed.');
+      
+      localStorage.setItem(`MISSION_${missionId}`, "completed");
+      document.getElementById(`mission${missionId}`).classList.add('completed');
+      
+      totalPoints += getMissionPoints(missionId);
+      localStorage.setItem('totalPoints', totalPoints);
+      document.getElementById('total-points').textContent = totalPoints;
+      
+      alert(`証拠写真が提出されました (MISSION ${missionId})`);
     }
 
-    window.onload = loadMissionDetails;
+    function showCompletedMissions() {
+      document.getElementById('main-page').style.display = 'none';
+      document.getElementById('completed-missions').style.display = 'block';
+      
+      let completedHTML = "";
+      for (let i = 1; i <= 18; i++) {
+        if (localStorage.getItem(`MISSION_${i}`)) {
+          completedHTML += `<div class="box"><h2>MISSION ${i}</h2><p>Completed</p></div>`;
+        }
+      }
+      document.getElementById('completed-mission-list').innerHTML = completedHTML;
+    }
+
+    function goBack() {
+      document.getElementById('main-page').style.display = 'block';
+      document.getElementById('mission-details').style.display = 'none';
+      document.getElementById('completed-missions').style.display = 'none';
+    }
+
+    function resetAllData() {
+      if (!confirm('すべてのデータを削除します。よろしいですか？')) return;
+      
+      for (let i = 1; i <= 18; i++) {
+        localStorage.removeItem(`MISSION_${i}`);
+      }
+      localStorage.setItem('totalPoints', '0');
+      totalPoints = 0;
+      document.getElementById('total-points').textContent = '0';
+      populateMissions();
+      alert('すべてのデータを削除しました。');
+    }
+
+    populateMissions();
   </script>
+
 </body>
 </html>
