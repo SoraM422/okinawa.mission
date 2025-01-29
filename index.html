@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
   <title>Mission Points</title>
   <style>
-    /* 全体のスタイル */
     body {
       background-color: #000;
       color: #fff;
@@ -16,26 +15,20 @@
     }
     .container {
       padding: 20px;
-      max-width: 100%;
-      box-sizing: border-box;
+      max-width: 600px;
+      margin: auto;
     }
-    .title-box, .points-box {
+    .title-box, .points-box, .mission-container, .info-box, .mission-box {
       border: 2px solid #fff;
       padding: 15px;
       margin: 20px auto;
-      max-width: 90%;
+      width: 90%;
       box-sizing: border-box;
+      text-align: center;
     }
-    .mission-container, .info-box {
-      border: 2px solid #fff;
-      padding: 15px;
-      margin-top: 20px;
-      max-width: 90%;
-      box-sizing: border-box;
-    }
-    table {
+    .mission-container table {
       width: 100%;
-      margin: 0 auto;
+      margin: auto;
       border-collapse: collapse;
     }
     th, td {
@@ -56,27 +49,20 @@
     .completed {
       color: red;
       text-decoration: line-through;
-      position: relative;
-    }
-    .completed::after {
-      content: ' COMPLETED';
-      color: red;
-      font-weight: bold;
-      position: absolute;
-      right: -80px;
     }
     .mission-details {
       display: none;
-      margin-top: 30px;
       border: 2px solid #fff;
       padding: 20px;
-      max-width: 90%;
+      width: 90%;
       margin: 20px auto;
-      text-align: left;
+      text-align: center;
+    }
+    .info-box {
+      word-wrap: break-word;
     }
     .file-input-container {
       margin-top: 20px;
-      text-align: center;
     }
     .back-button, .reset-button {
       border: 2px solid #fff;
@@ -86,33 +72,18 @@
       color: #fff;
       cursor: pointer;
       font-size: 14px;
-      font-family: 'Courier New', Courier, monospace;
     }
     .back-button:hover, .reset-button:hover {
       background-color: #666;
     }
-    /* COMPLETED MISSIONS */
-    #completed-missions {
-      display: none;
-    }
-    #completed-mission-list .completed-mission-item {
-      border: 2px solid #fff;
-      padding: 15px;
-      margin: 10px auto;
-      max-width: 90%;
-      box-sizing: border-box;
-    }
   </style>
 </head>
 <body>
-  <!-- MAIN PAGE -->
   <div class="container" id="main-page">
     <h1 class="title-box">YOUR TOTAL POINTS</h1>
-    <!-- ポイント表示 (初期 0) -->
     <div class="points-box">
-      <span class="points" id="total-points">0</span>
+      <span id="total-points">0</span>
     </div>
-
     <div class="mission-container">
       <table>
         <thead>
@@ -125,183 +96,73 @@
         <tbody id="mission-list"></tbody>
       </table>
     </div>
-
-    <!-- Completed Missions ボタン -->
     <button class="back-button" onclick="showCompletedMissions()">COMPLETED MISSIONS</button>
-
-    <!-- Reset All ボタン (すべての保存データを削除) -->
-    <button class="reset-button" style="background-color:#900" onclick="resetAllData()">
-      RESET ALL (Clear Images & Points)
-    </button>
+    <button class="reset-button" style="background-color:#900" onclick="resetAllData()">RESET ALL</button>
   </div>
 
-  <!-- MISSION DETAILS PAGE -->
   <div class="mission-details" id="mission-details">
-    <h1 id="mission-title">MISSION</h1>
-    <p id="mission-description">Loading...</p>
-    <p>You will earn: <span id="mission-points"></span> pt</p>
-    <div class="info-box">
-      <h3>INFORMATION:</h3>
-      <p>ミッションの詳細がここに表示されます。</p>
+    <h1 class="title-box" id="mission-title">MISSION</h1>
+    <div class="mission-box">
+      <p id="mission-description"></p>
     </div>
+    <p>You will earn: <span id="mission-points"></span> pt</p>
+    <div class="info-box" id="mission-info"></div>
     <div class="file-input-container">
       <label for="fileInput" class="back-button">写真を提出</label>
-      <input
-        type="file"
-        id="fileInput"
-        style="display:none"
-        onchange="handleFileUpload()"
-      />
+      <input type="file" id="fileInput" style="display:none" onchange="handleFileUpload()"/>
     </div>
-    <button class="back-button" onclick="goBack()">戻る</button>
-  </div>
-
-  <!-- COMPLETED MISSIONS PAGE -->
-  <div class="container" id="completed-missions">
-    <h1 class="title-box">COMPLETED MISSIONS</h1>
-    <div id="completed-mission-list"></div>
     <button class="back-button" onclick="goBack()">戻る</button>
   </div>
 
   <script>
-    // GLOBAL: totalPoints from localStorage (or 0 if not set)
-    window.totalPoints = parseInt(localStorage.getItem('totalPoints') || '0', 10);
-    document.getElementById('total-points').textContent = window.totalPoints;
+    const missions = [
+      "Find a unique rock", "Take a picture of a sunset", "Draw a map of your surroundings",
+      "Identify a rare bird", "Collect a unique leaf", "Find a hidden path",
+      "Describe a historical event", "Solve a local puzzle", "Photograph an interesting building",
+      "Spot a local animal", "Try a new dish", "Record a nature sound",
+      "Write a poem about your trip", "Interview a local resident", "Capture a reflection in water",
+      "Find a symbol of good luck", "Identify a unique tree", "Document a cultural artifact"
+    ];
 
-    // Points calculation
-    function getMissionPoints(missionId) {
-      if (missionId === 18) return 40; // special mission
-      if (missionId >= 1 && missionId <= 6)  return 3;  // EASY
-      if (missionId >= 7 && missionId <= 12) return 5;  // NORMAL
-      return 10;                                       // DIFFICULT
-    }
-
-    // Generate mission table
     function populateMissions() {
       const missionList = document.getElementById('mission-list');
       missionList.innerHTML = '';
-
-      // Display 1~18 => 6 rows × 3 columns
-      for (let i = 1; i <= 6; i++) {
+      for (let i = 0; i < 6; i++) {
         missionList.innerHTML += `
           <tr>
-            <td><a id="mission${i}" onclick="showMission(${i})">MISSION ${i}</a></td>
-            <td><a id="mission${i+6}" onclick="showMission(${i+6})">MISSION ${i+6}</a></td>
-            <td><a id="mission${i+12}" onclick="showMission(${i+12})">MISSION ${i+12}</a></td>
+            <td><a onclick="showMission(${i})">MISSION ${i + 1}</a></td>
+            <td><a onclick="showMission(${i+6})">MISSION ${i + 7}</a></td>
+            <td><a onclick="showMission(${i+12})">MISSION ${i + 13}</a></td>
           </tr>
         `;
       }
-
-      // Mark previously completed
-      for (let i = 1; i <= 18; i++) {
-        if (localStorage.getItem(`MISSION_${i}`)) {
-          const link = document.getElementById(`mission${i}`);
-          if (link) link.classList.add('completed');
-        }
-      }
     }
 
-    // Show mission detail
-    window.showMission = function(missionId) {
-      document.getElementById('mission-title').textContent = `MISSION ${missionId}`;
-      document.getElementById('mission-points').textContent = getMissionPoints(missionId);
-
-      // Switch to detail page
+    function showMission(missionId) {
+      document.getElementById('mission-title').textContent = `MISSION ${missionId + 1}`;
+      document.getElementById('mission-description').textContent = missions[missionId];
+      document.getElementById('mission-points').textContent = (missionId < 6) ? 3 : (missionId < 12) ? 5 : 10;
+      document.getElementById('mission-info').textContent = "ミッションの詳細がここに表示されます。";
       document.getElementById('main-page').style.display = 'none';
       document.getElementById('mission-details').style.display = 'block';
-    };
+    }
 
-    // Upload photo => store => points
-    window.handleFileUpload = function() {
-      const fileInput = document.getElementById('fileInput');
-      const missionTitle = document.getElementById('mission-title').textContent;
-      const missionId = parseInt(missionTitle.replace('MISSION ', ''), 10);
-
-      if (fileInput.files.length > 0) {
-        // Already done?
-        const existing = localStorage.getItem(`MISSION_${missionId}`);
-        if (existing) {
-          alert('既にポイント加算済みのミッションです。');
-          return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = function(event) {
-          const img = new Image();
-          img.src = event.target.result;
-          img.onload = function() {
-            // Resize 300x200, quality=1.0
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = 300;
-            canvas.height = 200;
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-            const resizedData = canvas.toDataURL('image/jpeg', 1.0);
-
-            // Save in localStorage
-            localStorage.setItem(`MISSION_${missionId}`, resizedData);
-
-            // Mark link
-            const link = document.getElementById(`mission${missionId}`);
-            if (link) link.classList.add('completed');
-
-            // Add points
-            const pts = getMissionPoints(missionId);
-            window.totalPoints += pts;
-            localStorage.setItem('totalPoints', window.totalPoints);
-            document.getElementById('total-points').textContent = window.totalPoints;
-          };
-        };
-        reader.readAsDataURL(fileInput.files[0]);
-      }
-    };
-
-    // Show completed missions
-    window.showCompletedMissions = function() {
-      document.getElementById('main-page').style.display = 'none';
-      document.getElementById('mission-details').style.display = 'none';
-      document.getElementById('completed-missions').style.display = 'block';
-
-      const completedList = document.getElementById('completed-mission-list');
-      completedList.innerHTML = '';
-
-      for (let i = 1; i <= 18; i++) {
-        const imgData = localStorage.getItem(`MISSION_${i}`);
-        if (imgData) {
-          completedList.innerHTML += `
-            <div class="completed-mission-item">
-              <h2>MISSION ${i}</h2>
-              <img src="${imgData}" style="max-width:100%;"/>
-            </div>
-          `;
-        }
-      }
-    };
-
-    // Go back to main page
-    window.goBack = function() {
+    function goBack() {
       document.getElementById('main-page').style.display = 'block';
       document.getElementById('mission-details').style.display = 'none';
-      document.getElementById('completed-missions').style.display = 'none';
-    };
+    }
 
-    // Reset all missions & points
-    window.resetAllData = function() {
-      if (!confirm('すべてのミッション画像とポイントを削除します。よろしいですか？')) return;
-
-      for (let i = 1; i <= 18; i++) {
-        localStorage.removeItem(`MISSION_${i}`);
-      }
+    function resetAllData() {
+      if (!confirm('すべてのミッションをリセットしますか？')) return;
       window.totalPoints = 0;
-      localStorage.setItem('totalPoints', '0');
       document.getElementById('total-points').textContent = '0';
+      alert('データをリセットしました。');
+    }
 
-      populateMissions();
-      alert('すべての画像とポイントを削除しました。');
-    };
+    function handleFileUpload() {
+      alert('写真が提出されました。');
+    }
 
-    // Initialize
     populateMissions();
   </script>
 </body>
