@@ -14,10 +14,10 @@
     a { color: #fff; cursor: pointer; font-style: italic; text-decoration: none; }
     a:hover { text-decoration: underline; }
     
-    /* ✅ COMPLETED のデザイン修正 */
+    /* ✅ COMPLETED のデザイン */
     .completed {
-      color: #888; /* ✅ 灰色に変更 */
-      text-decoration: line-through red; /* ✅ 赤い取り消し線 */
+      color: #888;
+      text-decoration: line-through red;
       position: relative;
     }
     .completed::after {
@@ -28,7 +28,30 @@
       position: absolute;
       top: -5px;
       left: 0px;
-      transform: rotate(20deg); /* ✅ Cが上、Dが下の角度 */
+      transform: rotate(20deg);
+    }
+
+    /* ✅ 画像表示のスタイル */
+    .image-container {
+      position: relative;
+      display: inline-block;
+      margin: 10px;
+    }
+    .image-container img {
+      max-width: 100%;
+      height: auto;
+      cursor: pointer;
+    }
+    .image-overlay {
+      position: absolute;
+      bottom: 5px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      font-size: 12px;
+      padding: 5px;
+      border-radius: 5px;
     }
 
     .mission-details, #completed-missions { display: none; text-align: left; }
@@ -92,33 +115,39 @@
       }
       document.getElementById('mission-list').innerHTML = missionList;
       for (let i = 1; i <= 18; i++) {
-        if (localStorage.getItem(`MISSION_${i}`)) document.getElementById(`mission${i}`).classList.add('completed');
+        if (localStorage.getItem(`MISSION_${i}_lowres`)) document.getElementById(`mission${i}`).classList.add('completed');
       }
-    }
-
-    function showMission(id) {
-      document.getElementById('mission-id').textContent = id;
-      document.getElementById('mission-description').textContent = `沖縄に生息する◯◯を発見せよ`;
-      document.getElementById('mission-points').textContent = getMissionPoints(id);
-      document.getElementById('mission-info').textContent = "ここにミッションに関する詳細情報を記載する";
-
-      document.getElementById('main-page').style.display = 'none';
-      document.getElementById('mission-details').style.display = 'block';
     }
 
     function handleFileUpload() {
       const fileInput = document.getElementById('fileInput');
       const missionId = document.getElementById('mission-id').textContent;
-      if (fileInput.files.length === 0 || localStorage.getItem(`MISSION_${missionId}`)) return alert('Mission already completed.');
+      if (fileInput.files.length === 0 || localStorage.getItem(`MISSION_${missionId}_lowres`)) return alert('Mission already completed.');
 
-      localStorage.setItem(`MISSION_${missionId}`, "completed");
-      document.getElementById(`mission${missionId}`).classList.add('completed');
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          canvas.width = 150;
+          canvas.height = 100;
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-      totalPoints += getMissionPoints(missionId);
-      localStorage.setItem('totalPoints', totalPoints);
-      document.getElementById('total-points').textContent = totalPoints;
+          const lowResImage = canvas.toDataURL('image/jpeg', 0.7);
+          localStorage.setItem(`MISSION_${missionId}_lowres`, lowResImage);
+          localStorage.setItem(`MISSION_${missionId}_highres`, event.target.result);
 
-      goBack(); // ✅ 画像提出後、メイン画面へ戻る
+          document.getElementById(`mission${missionId}`).classList.add('completed');
+          totalPoints += getMissionPoints(missionId);
+          localStorage.setItem('totalPoints', totalPoints);
+          document.getElementById('total-points').textContent = totalPoints;
+          
+          goBack();
+        };
+      };
+      reader.readAsDataURL(fileInput.files[0]);
     }
 
     function showCompletedMissions() {
@@ -127,8 +156,14 @@
 
       let completedHTML = "";
       for (let i = 1; i <= 18; i++) {
-        if (localStorage.getItem(`MISSION_${i}`)) {
-          completedHTML += `<div class="box"><h2>MISSION ${i}</h2><p>Completed</p></div>`;
+        const lowRes = localStorage.getItem(`MISSION_${i}_lowres`);
+        const highRes = localStorage.getItem(`MISSION_${i}_highres`);
+        if (lowRes && highRes) {
+          completedHTML += `
+            <div class="image-container">
+              <img src="${lowRes}" onclick="window.open('${highRes}', '_blank')">
+              <div class="image-overlay">画像をタップ</div>
+            </div>`;
         }
       }
       document.getElementById('completed-mission-list').innerHTML = completedHTML;
@@ -145,6 +180,7 @@
 
 </body>
 </html>
+
 
 
 
