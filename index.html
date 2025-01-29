@@ -10,11 +10,27 @@
     .title-box { font-size: 24px; font-weight: bold; text-transform: uppercase; margin-bottom: 10px; }
     .points-box { font-size: 30px; font-weight: bold; }
     table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 10px; font-size: 14px; }
+    th, td { padding: 10px; font-size: 14px; position: relative; } /* ✅ 相対位置を設定 */
     a { color: #fff; cursor: pointer; font-style: italic; text-decoration: none; }
     a:hover { text-decoration: underline; }
-    .completed { color: red; text-decoration: line-through; position: relative; }
-    .completed::after { content: ' COMPLETED'; color: red; font-weight: bold; position: absolute; right: -80px; }
+    
+    /* ✅ COMPLETED のデザイン修正 */
+    .completed {
+      color: #fff;
+      text-decoration: line-through;
+      position: relative;
+    }
+    .completed::after {
+      content: 'COMPLETED';
+      color: red;
+      font-size: 12px; /* ✅ サイズを少し小さく */
+      font-weight: bold;
+      position: absolute;
+      top: -8px; /* ✅ 斜め配置 */
+      left: 5px;
+      transform: rotate(-20deg); /* ✅ 斜めの角度 */
+    }
+
     .mission-details, #completed-missions { display: none; text-align: left; }
     .button { border: 2px solid #fff; padding: 10px 20px; background: #333; color: #fff; cursor: pointer; margin-top: 20px; }
     .button:hover { background: #666; }
@@ -127,4 +143,5 @@
 
 </body>
 </html>
+
 
