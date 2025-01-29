@@ -10,25 +10,25 @@
     .title-box { font-size: 24px; font-weight: bold; text-transform: uppercase; margin-bottom: 10px; }
     .points-box { font-size: 30px; font-weight: bold; }
     table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 10px; font-size: 14px; position: relative; } /* ✅ 相対位置を設定 */
+    th, td { padding: 10px; font-size: 14px; position: relative; }
     a { color: #fff; cursor: pointer; font-style: italic; text-decoration: none; }
     a:hover { text-decoration: underline; }
     
     /* ✅ COMPLETED のデザイン修正 */
     .completed {
-      color: red;
-      text-decoration: line-through red; /* ✅ 赤い線 */
+      color: #888; /* ✅ 灰色に変更 */
+      text-decoration: line-through red; /* ✅ 赤い取り消し線 */
       position: relative;
     }
     .completed::after {
       content: 'COMPLETED';
       color: red;
-      font-size: 14px; /* ✅ 画像に合わせたサイズ調整 */
+      font-size: 14px;
       font-weight: bold;
       position: absolute;
-      top: -5px; /* ✅ 画像のような位置 */
+      top: -5px;
       left: 0px;
-      transform: rotate(-20deg); /* ✅ 画像のような角度 */
+      transform: rotate(20deg); /* ✅ Cが上、Dが下の角度 */
     }
 
     .mission-details, #completed-missions { display: none; text-align: left; }
@@ -145,5 +145,6 @@
 
 </body>
 </html>
+
 
 
