@@ -108,21 +108,28 @@
       let missionList = '';
       for (let i = 1; i <= 6; i++) {
         missionList += `<tr>
-          <td><a id="mission${i}" onclick="showMission(${i})">MISSION ${i}</a></td>
-          <td><a id="mission${i+6}" onclick="showMission(${i+6})">MISSION ${i+6}</a></td>
-          <td><a id="mission${i+12}" onclick="showMission(${i+12})">MISSION ${i+12}</a></td>
+          <td><a id="mission${i}" href="#" onclick="showMission(${i})">MISSION ${i}</a></td>
+          <td><a id="mission${i+6}" href="#" onclick="showMission(${i+6})">MISSION ${i+6}</a></td>
+          <td><a id="mission${i+12}" href="#" onclick="showMission(${i+12})">MISSION ${i+12}</a></td>
         </tr>`;
       }
       document.getElementById('mission-list').innerHTML = missionList;
-      for (let i = 1; i <= 18; i++) {
-        if (localStorage.getItem(`MISSION_${i}_lowres`)) document.getElementById(`mission${i}`).classList.add('completed');
-      }
+    }
+
+    function showMission(id) {
+      document.getElementById('mission-id').textContent = id;
+      document.getElementById('mission-description').textContent = `沖縄に生息する◯◯を発見せよ`;
+      document.getElementById('mission-points').textContent = getMissionPoints(id);
+      document.getElementById('mission-info').textContent = "ここにミッションに関する詳細情報を記載する";
+
+      document.getElementById('main-page').style.display = 'none';
+      document.getElementById('mission-details').style.display = 'block';
     }
 
     function handleFileUpload() {
       const fileInput = document.getElementById('fileInput');
       const missionId = document.getElementById('mission-id').textContent;
-      if (fileInput.files.length === 0 || localStorage.getItem(`MISSION_${missionId}_lowres`)) return alert('Mission already completed.');
+      if (fileInput.files.length === 0) return alert('ファイルを選択してください。');
 
       const reader = new FileReader();
       reader.onload = function(event) {
@@ -148,25 +155,6 @@
         };
       };
       reader.readAsDataURL(fileInput.files[0]);
-    }
-
-    function showCompletedMissions() {
-      document.getElementById('main-page').style.display = 'none';
-      document.getElementById('completed-missions').style.display = 'block';
-
-      let completedHTML = "";
-      for (let i = 1; i <= 18; i++) {
-        const lowRes = localStorage.getItem(`MISSION_${i}_lowres`);
-        const highRes = localStorage.getItem(`MISSION_${i}_highres`);
-        if (lowRes && highRes) {
-          completedHTML += `
-            <div class="image-container">
-              <img src="${lowRes}" onclick="window.open('${highRes}', '_blank')">
-              <div class="image-overlay">画像をタップ</div>
-            </div>`;
-        }
-      }
-      document.getElementById('completed-mission-list').innerHTML = completedHTML;
     }
 
     function goBack() {
