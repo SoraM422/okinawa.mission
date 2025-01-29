@@ -16,19 +16,19 @@
     
     /* ✅ COMPLETED のデザイン修正 */
     .completed {
-      color: #fff;
-      text-decoration: line-through;
+      color: red;
+      text-decoration: line-through red; /* ✅ 赤い線 */
       position: relative;
     }
     .completed::after {
       content: 'COMPLETED';
       color: red;
-      font-size: 12px; /* ✅ サイズを少し小さく */
+      font-size: 14px; /* ✅ 画像に合わせたサイズ調整 */
       font-weight: bold;
       position: absolute;
-      top: -8px; /* ✅ 斜め配置 */
-      left: 5px;
-      transform: rotate(-20deg); /* ✅ 斜めの角度 */
+      top: -5px; /* ✅ 画像のような位置 */
+      left: 0px;
+      transform: rotate(-20deg); /* ✅ 画像のような角度 */
     }
 
     .mission-details, #completed-missions { display: none; text-align: left; }
@@ -117,6 +117,8 @@
       totalPoints += getMissionPoints(missionId);
       localStorage.setItem('totalPoints', totalPoints);
       document.getElementById('total-points').textContent = totalPoints;
+
+      goBack(); // ✅ 画像提出後、メイン画面へ戻る
     }
 
     function showCompletedMissions() {
