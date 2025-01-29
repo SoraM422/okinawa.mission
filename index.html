@@ -3,123 +3,49 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Mission Points</title>
+  <title>Mission Details</title>
   <style>
     body { background: #000; color: #fff; font-family: 'Courier New', monospace; text-align: center; margin: 0; }
     .container, .box { border: 2px solid #fff; padding: 15px; margin: 20px auto; max-width: 90%; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 10px; font-size: 14px; }
-    a { color: #fff; cursor: pointer; font-style: italic; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    .completed { color: red; text-decoration: line-through; }
-    .mission-details, #completed-missions { display: none; text-align: left; }
+    .title { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+    .mission-description { font-size: 18px; margin: 10px 0; }
+    .points { font-size: 18px; margin: 10px 0; }
+    .info-box { border: 2px solid #fff; padding: 10px; text-align: left; margin-top: 20px; }
     .button { border: 2px solid #fff; padding: 10px 20px; background: #333; color: #fff; cursor: pointer; margin-top: 20px; }
     .button:hover { background: #666; }
   </style>
 </head>
 <body>
-  <div class="container" id="main-page">
-    <h1 class="box">YOUR TOTAL POINTS</h1>
-    <div class="box" id="total-points">0</div>
-    <div class="box">
-      <table><thead><tr><th>EASY</th><th>NORMAL</th><th>DIFFICULT</th></tr></thead><tbody id="mission-list"></tbody></table>
+  <div class="container" id="mission-details">
+    <div class="title">MISSION <span id="mission-id"></span></div>
+    <div class="box mission-description" id="mission-description"></div>
+    <div class="points">You will earn: <span id="mission-points"></span> pt</div>
+    <div class="box info-box">
+      <strong>INFORMATION:</strong>
+      <p id="mission-info"></p>
     </div>
-    <button class="button" onclick="showCompletedMissions()">COMPLETED MISSIONS</button>
-    <button class="button" style="background:#900" onclick="resetAllData()">RESET ALL</button>
-  </div>
-  
-  <div class="container mission-details" id="mission-details">
-    <h1 id="mission-title"></h1>
-    <p id="mission-description">Loading...</p>
-    <p>Earn: <span id="mission-points"></span> pt</p>
-    <button class="button" onclick="document.getElementById('fileInput').click()">Upload Photo</button>
+    <button class="button" onclick="document.getElementById('fileInput').click()">証拠写真を提出</button>
     <input type="file" id="fileInput" style="display:none" onchange="handleFileUpload()"/>
-    <button class="button" onclick="goBack()">Back</button>
-  </div>
-  
-  <div class="container" id="completed-missions">
-    <h1 class="box">COMPLETED MISSIONS</h1>
-    <div id="completed-mission-list"></div>
-    <button class="button" onclick="goBack()">Back</button>
   </div>
 
   <script>
-    let totalPoints = parseInt(localStorage.getItem('totalPoints') || '0', 10);
-    document.getElementById('total-points').textContent = totalPoints;
-    
-    function getMissionPoints(id) {
-      return id === 18 ? 40 : id <= 6 ? 3 : id <= 12 ? 5 : 10;
+    function loadMissionDetails() {
+      const params = new URLSearchParams(window.location.search);
+      const missionId = params.get('id');
+      document.getElementById('mission-id').textContent = missionId;
+      document.getElementById('mission-description').textContent = `沖縄に生息する◯◯を発見せよ`;
+      document.getElementById('mission-points').textContent = 5;
+      document.getElementById('mission-info').textContent = "ここにミッションに関する詳細情報を記載する";
     }
-    
-    function populateMissions() {
-      let missionList = '';
-      for (let i = 1; i <= 6; i++) {
-        missionList += `<tr>
-          ${[0, 6, 12].map(offset => `<td><a id="mission${i+offset}" onclick="showMission(${i+offset})">MISSION ${i+offset}</a></td>`).join('')}
-        </tr>`;
-      }
-      document.getElementById('mission-list').innerHTML = missionList;
-      for (let i = 1; i <= 18; i++) {
-        if (localStorage.getItem(`MISSION_${i}`)) document.getElementById(`mission${i}`).classList.add('completed');
-      }
-    }
-    
-    function showMission(id) {
-      document.getElementById('mission-title').textContent = `MISSION ${id}`;
-      document.getElementById('mission-points').textContent = getMissionPoints(id);
-      document.getElementById('main-page').style.display = 'none';
-      document.getElementById('mission-details').style.display = 'block';
-    }
-    
+
     function handleFileUpload() {
       const fileInput = document.getElementById('fileInput');
-      const id = parseInt(document.getElementById('mission-title').textContent.replace('MISSION ', ''), 10);
-      if (fileInput.files.length === 0 || localStorage.getItem(`MISSION_${id}`)) return alert('Mission already completed.');
-      
-      const reader = new FileReader();
-      reader.onload = e => {
-        const img = new Image();
-        img.src = e.target.result;
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          canvas.width = 300; canvas.height = 200;
-          canvas.getContext('2d').drawImage(img, 0, 0, 300, 200);
-          localStorage.setItem(`MISSION_${id}`, canvas.toDataURL('image/jpeg', 1.0));
-          document.getElementById(`mission${id}`).classList.add('completed');
-          totalPoints += getMissionPoints(id);
-          localStorage.setItem('totalPoints', totalPoints);
-          document.getElementById('total-points').textContent = totalPoints;
-        };
-      };
-      reader.readAsDataURL(fileInput.files[0]);
+      if (fileInput.files.length > 0) {
+        alert("証拠写真が提出されました。");
+      }
     }
-    
-    function showCompletedMissions() {
-      document.getElementById('main-page').style.display = 'none';
-      document.getElementById('completed-missions').style.display = 'block';
-      document.getElementById('completed-mission-list').innerHTML = [...Array(18).keys()].map(i => i+1)
-        .filter(i => localStorage.getItem(`MISSION_${i}`))
-        .map(i => `<div class="box"><h2>MISSION ${i}</h2><img src="${localStorage.getItem(`MISSION_${i}`)}" style="max-width:100%"/></div>`)
-        .join('');
-    }
-    
-    function goBack() {
-      document.getElementById('main-page').style.display = 'block';
-      document.getElementById('mission-details').style.display = 'none';
-      document.getElementById('completed-missions').style.display = 'none';
-    }
-    
-    function resetAllData() {
-      if (!confirm('Clear all data?')) return;
-      [...Array(18).keys()].forEach(i => localStorage.removeItem(`MISSION_${i+1}`));
-      localStorage.setItem('totalPoints', '0');
-      totalPoints = 0;
-      document.getElementById('total-points').textContent = '0';
-      populateMissions();
-      alert('Data cleared.');
-    }
-    
-    populateMissions();
+
+    window.onload = loadMissionDetails;
   </script>
 </body>
 </html>
