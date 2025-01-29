@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
   <title>Mission Points</title>
   <style>
+    /* 全体のスタイル */
     body {
       background-color: #000;
       color: #fff;
@@ -114,6 +115,12 @@
     <button class="back-button" onclick="goBack()">戻る</button>
   </div>
 
+  <div class="container" id="completed-missions">
+    <h1 class="title-box">COMPLETED MISSIONS</h1>
+    <div id="completed-mission-list"></div>
+    <button class="back-button" onclick="goBack()">戻る</button>
+  </div>
+
   <script>
     const missions = [
       "Find a unique rock", "Take a picture of a sunset", "Draw a map of your surroundings",
@@ -147,9 +154,14 @@
       document.getElementById('mission-details').style.display = 'block';
     }
 
+    function handleFileUpload() {
+      alert('写真が提出されました。');
+    }
+
     function goBack() {
       document.getElementById('main-page').style.display = 'block';
       document.getElementById('mission-details').style.display = 'none';
+      document.getElementById('completed-missions').style.display = 'none';
     }
 
     function resetAllData() {
@@ -157,10 +169,6 @@
       window.totalPoints = 0;
       document.getElementById('total-points').textContent = '0';
       alert('データをリセットしました。');
-    }
-
-    function handleFileUpload() {
-      alert('写真が提出されました。');
     }
 
     populateMissions();
